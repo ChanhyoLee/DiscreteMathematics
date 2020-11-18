@@ -44,13 +44,22 @@ void iterateOnce(int time){
     else if(time!=0){
         double deltaZ = decision.getAccuracy() - PREVIOUS_ACCURACY;
         deltaZ = deltaZ * 100;
-        int deltaX = DIFFERENCE_THRESHOLD - PREVIOUS_DIFFERENCE_THRESHOLD;
-        double deltaY = PROBABILITY_THRESHOLD - PREVIOUS_PROBABILITY_THRESHOLD;
+        int deltaX = MOVINGVECTORLIST.at(time-1).first;
+        if(deltaX==0) {
+            if(deltaZ > 0){
+                deltaX = -1;
+            }
+            else{
+                deltaX = 1;
+            }
+        }
+        double deltaY = MOVINGVECTORLIST.at(time-1).second;
         deltaY = deltaY * 100;
 
-        pair <int, double> new_movingVector = make_pair((int)round(GAMMA * MOVINGVECTORLIST.at(time-1).first), GAMMA*MOVINGVECTORLIST.at(time-1).second);
+        pair <int, double> new_movingVector = make_pair((int)round(GAMMA * deltaX), GAMMA * deltaY/100);
         new_movingVector.first += (int)round(LEARNINGRATE * (deltaZ/deltaX));
         new_movingVector.second += LEARNINGRATE * (deltaZ/deltaY);
+        cout << new_movingVector.first << "\t" << new_movingVector.second << endl;
         MOVINGVECTORLIST.push_back(new_movingVector);
     }
 
