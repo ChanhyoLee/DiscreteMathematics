@@ -17,11 +17,19 @@ extern int DIFFERENCE_THRESHOLD;
 class MailDataset{
 private:
     string path;
+    vector<Mail> whole_mails;
+
+    vector<Mail> spam_mails;
+    vector<Mail> ham_mails;
+
     vector<Mail> train_mails;
     vector<Mail> test_mails;
     int num_lines;
     int train_count;
     int test_count;
+
+    int ham_count;
+    int spam_count;
 
     map<string, int>* m_pHAM_Vocab2Frequency;
     map<string, int>* m_pSPAM_Vocab2Frequency;
@@ -32,9 +40,13 @@ public:
         num_lines = 0;
         train_count = 0;
         test_count = 0;
+        ham_count = 0;
+        spam_count = 0;
+
         m_pHAM_Vocab2Frequency = new map<string, int>();
         m_pSPAM_Vocab2Frequency = new map<string, int>();
         build_dataset();
+        chooseMails();
     }
 
     void build_dataset(){
@@ -70,30 +82,72 @@ public:
                 }
                 if(temp_label.find("ham")!=string::npos){
                     temp_mail.setLabel(HAM);
+                    ham_count ++;
+                    ham_mails.push_back(temp_mail);
                 }
                 else if(temp_label.find("spam")!= string::npos){
                     temp_mail.setLabel(SPAM);
+                    spam_count ++;
+                    spam_mails.push_back(temp_mail);
                 }
                 else{
                     temp_mail = Mail();
                     continue;
                 }           
-                if(rand()%6<=4){
-                    train_mails.push_back(temp_mail);
-                    train_count++;
-                    updateVocab2Frequency(temp_mail);
-                }
-                else{
-                    test_mails.push_back(temp_mail);
-                    test_count++;
-                }
+                whole_mails.push_back(temp_mail);
+                
                 temp_mail = Mail();
                 num_lines ++;
             }
         }
         fs.close();
+        // cout << ham_count << endl;
+        // cout << spam_count << endl;
     }
 
+    void chooseMails(){
+        for(int i=0; i<1000; i++){
+            int random = rand()%(spam_count-1);
+            train_mails.push_back(spam_mails.at(random));
+            updateVocab2Frequency(spam_mails.at(random));
+            spam_mails.erase(spam_mails.begin()+random);
+            spam_count--;
+            train_count++;
+        }
+        for(int i=0; i<1000; i++){
+            int random = rand()%(ham_count-1);
+            train_mails.push_back(ham_mails.at(random));
+            updateVocab2Frequency(ham_mails.at(random));
+            ham_mails.erase(ham_mails.begin()+random);
+            ham_count--;
+            train_count++;
+        }
+        for(int i=0; i<200; i++){
+            int random = rand()%(spam_count-1);
+            test_mails.push_back(spam_mails.at(random));
+            spam_mails.erase(spam_mails.begin()+random);
+            spam_count--;
+            test_count++;
+        }
+        for(int i=0; i<200; i++){
+            int random = rand()%(ham_count-1);
+            test_mails.push_back(ham_mails.at(random));
+            ham_mails.erase(ham_mails.begin()+random);
+            ham_count--;
+            test_count++;
+        }
+        vector< pair<string, int> > spamwords = this->selectUniqueSPAMword();
+        for(int i=0; i<spamwords.size(); i++){
+            cout << spamwords.at(i).first << "\t";
+            cout << spamwords.at(i).second << "\t";
+            if(i%5==4) cout << endl;
+        }
+        cout << endl;
+        // for(int i=0; i<spamwords.size(); i++){
+        //     if(i%5==4) cout << endl;
+        // }
+        cout << endl;  
+    }
     string getPath(){
         return path;
     }
@@ -103,6 +157,7 @@ public:
     vector<Mail> getTestMails(){
         return test_mails;
     }
+
     int getNumLines(){
         return num_lines;
     }

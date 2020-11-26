@@ -6,15 +6,15 @@ extern double PROBABILITY_THRESHOLD;
 
 class DecisionMaking{
 private:
-    MailDataset dataset;
+    MailDataset* dataset;
     map<string, int>* m_ptest_Vocab2Frequency;
     double accuracy;
 
 public:
-    DecisionMaking(MailDataset maildataset){
+    DecisionMaking(MailDataset* maildataset){
         dataset = maildataset;
         accuracy = 0;
-        vector<Mail> test_mails = dataset.getTestMails();
+        vector<Mail> test_mails = dataset->getTestMails();
 
         for(int i=0; i<test_mails.size(); i++){
             m_ptest_Vocab2Frequency = new map<string, int>();
@@ -25,8 +25,8 @@ public:
             else{
                 //cout << "--------------------------------" << endl;
             }
-            if(i%100 == 0){
-                printf("%d th mail\n", i);
+            if(i%100 == 99){
+                printf("%d th mail\n", i+1);
             }
         }
         cout << "Right Decision: " << accuracy << endl;
@@ -60,24 +60,23 @@ public:
     }
 
     double calculateProbability(){
-        vector< pair<string, int> > uniqueSPAMword = dataset.selectUniqueSPAMword();
+        vector< pair<string, int> > uniqueSPAMword = dataset->selectUniqueSPAMword();
         vector< pair<string, WordProbability> > tempVocab2Probaility;
         for(int i=0; i<uniqueSPAMword.size(); i++){
-      
             if(m_ptest_Vocab2Frequency->find(uniqueSPAMword.at(i).first)!=m_ptest_Vocab2Frequency->end()){
                 WordProbability tempProb;
                 // cout << dataset.getNumofTests() <<endl;
-                if(dataset.getpHAMVocab2Frequency()->find(uniqueSPAMword.at(i).first)==dataset.getpHAMVocab2Frequency()->end()){
+                if(dataset->getpHAMVocab2Frequency()->find(uniqueSPAMword.at(i).first)==dataset->getpHAMVocab2Frequency()->end()){
                     tempProb.setHAMProb(0.0);
                 } 
                 else{
-                    tempProb.setHAMProb((double)dataset.getpHAMVocab2Frequency()->at(uniqueSPAMword.at(i).first)/(double)dataset.getNumofTrains());
+                    tempProb.setHAMProb((double)dataset->getpHAMVocab2Frequency()->at(uniqueSPAMword.at(i).first)/(double)dataset->getNumofTrains());
                 }
-                if(dataset.getpSPAMVocab2Frequency()->find(uniqueSPAMword.at(i).first)==dataset.getpSPAMVocab2Frequency()->end()){
+                if(dataset->getpSPAMVocab2Frequency()->find(uniqueSPAMword.at(i).first)==dataset->getpSPAMVocab2Frequency()->end()){
                     tempProb.setSPAMProb(0.0);
                 }
                 else{
-                    tempProb.setSPAMProb((double)dataset.getpSPAMVocab2Frequency()->at(uniqueSPAMword.at(i).first)/(double)dataset.getNumofTrains());
+                    tempProb.setSPAMProb((double)dataset->getpSPAMVocab2Frequency()->at(uniqueSPAMword.at(i).first)/(double)dataset->getNumofTrains());
                 }
                 tempVocab2Probaility.push_back(make_pair(uniqueSPAMword.at(i).first, tempProb));
             }
