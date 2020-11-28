@@ -15,10 +15,16 @@ public:
         dataset = maildataset;
         accuracy = 0;
         vector<Mail> test_mails = dataset->getTestMails();
-
+        int count = 0;
+        cout << "Result for 10 mails" << endl;
+        cout << "origin" << "\t" << "result" << endl;
         for(int i=0; i<test_mails.size(); i++){
             m_ptest_Vocab2Frequency = new map<string, int>();
             bool check = a_simple_bayesian_spam_filter(test_mails.at(i));
+            if(i%40==39){
+                printf("%6d,\t%6d\n",test_mails.at(i).getLabel(), (int)check);
+                count ++;
+            }
             if(test_mails.at(i).getLabel()==(int)check) {
                 accuracy++;
             }
