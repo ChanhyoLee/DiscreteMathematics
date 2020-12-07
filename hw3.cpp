@@ -10,6 +10,8 @@ double PROBABILITY_THRESHOLD = 0.80;
 int main() {
     double meanAccuracy = 0;
     for (int epoch = 0; epoch < EPOCH; epoch++) {
+        cout << "-------------------------------" << endl;
+        cout << "-----------" << epoch << "th EPOCH-----------" << endl;
         MailDatasetTest* mailDataset = new MailDatasetTest();
         DecisionMaking* decision = new DecisionMaking(mailDataset);
 
@@ -17,6 +19,7 @@ int main() {
 
         delete mailDataset;
         delete decision;
+        cout << "-------------------------------" << endl;
     }
 
     meanAccuracy = meanAccuracy / EPOCH;

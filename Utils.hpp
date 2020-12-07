@@ -36,7 +36,7 @@ string Remove(string str, string delimiters) {
 
 string preprocess(string sentence) {
     transform(sentence.begin(), sentence.end(), sentence.begin(), [](unsigned char c) { return std::tolower(c); });
-    sentence = Remove(sentence, ",.?!/\"\'><:-");
+    sentence = Remove(sentence, "*,.?!/\"\'><:-");
     return sentence;
 }
 
