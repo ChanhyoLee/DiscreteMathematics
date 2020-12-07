@@ -1,4 +1,5 @@
-#include "MailDataset.hpp"
+//#include "MailDataset.hpp"
+#include "MailDatasetTest.hpp"
 #include "WordProbability.hpp"
 
 //#define PROBABILITY_THRESHOLD 0.8
@@ -6,12 +7,12 @@ extern double PROBABILITY_THRESHOLD;
 
 class DecisionMaking{
 private:
-    MailDataset* dataset;
+    MailDatasetTest* dataset;
     map<string, int>* m_ptest_Vocab2Frequency;
     double accuracy;
 
 public:
-    DecisionMaking(MailDataset* maildataset){
+    DecisionMaking(MailDatasetTest* maildataset){
         dataset = maildataset;
         accuracy = 0;
         vector<Mail> test_mails = dataset->getTestMails();
@@ -61,6 +62,13 @@ public:
         // if(result > 0.5){
         //     cout << "result: " << result << "\t" << "label: " << mail.getLabel() << endl;
         // }
+        // if(result>PROBABILITY_THRESHOLD&&mail.getLabel()==HAM){
+        //     cout << "origin ham result: " << result << endl;
+        // }
+        // else if(result<=PROBABILITY_THRESHOLD&&mail.getLabel()==SPAM){
+        //     cout << "origin spam result: " << result << endl;
+        // }
+
         if(result>PROBABILITY_THRESHOLD) return true;
         else return false;
     }
@@ -68,8 +76,10 @@ public:
     double calculateProbability(){
         vector< pair<string, int> > uniqueSPAMword = dataset->selectUniqueSPAMword();
         vector< pair<string, WordProbability> > tempVocab2Probaility;
+        int count = 0;
         for(int i=0; i<uniqueSPAMword.size(); i++){
             if(m_ptest_Vocab2Frequency->find(uniqueSPAMword.at(i).first)!=m_ptest_Vocab2Frequency->end()){
+                count ++;
                 WordProbability tempProb;
                 // cout << dataset.getNumofTests() <<endl;
                 if(dataset->getpHAMVocab2Frequency()->find(uniqueSPAMword.at(i).first)==dataset->getpHAMVocab2Frequency()->end()){
@@ -80,6 +90,7 @@ public:
                 }
                 if(dataset->getpSPAMVocab2Frequency()->find(uniqueSPAMword.at(i).first)==dataset->getpSPAMVocab2Frequency()->end()){
                     tempProb.setSPAMProb(0.0);
+                    cout << "Never Happen" << endl;
                 }
                 else{
                     tempProb.setSPAMProb((double)dataset->getpSPAMVocab2Frequency()->at(uniqueSPAMword.at(i).first)/(double)dataset->getNumofTrains());
@@ -87,6 +98,8 @@ public:
                 tempVocab2Probaility.push_back(make_pair(uniqueSPAMword.at(i).first, tempProb));
             }
         }
+        // cout << "spam words count: " << count << endl;
+
         double p = 1, q = 1;
         for(int j=0; j<tempVocab2Probaility.size(); j++){
             p = p * tempVocab2Probaility.at(j).second.getSPAMProb();

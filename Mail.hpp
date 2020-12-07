@@ -14,10 +14,7 @@ private:
     string subject;
     vector<string> body;
     int label;
-
-    //map<int, string>* m_pIndex2Vocab;
     map<string, int>* m_pVocab2Frequency;
-    //map<string, int>* m_pVocab2Index;
     int n_vocabs;
 
 public:
@@ -25,10 +22,7 @@ public:
         subject="";
         body = vector<string>();
         label = -1;
-
-        //m_pIndex2Vocab = new map<int, string>();
         m_pVocab2Frequency = new map<string, int>();
-        //m_pVocab2Index = new map<string, int>();
         n_vocabs = 0;
     }
     void setSubject(string str){

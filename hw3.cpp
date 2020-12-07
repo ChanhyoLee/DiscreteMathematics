@@ -3,11 +3,18 @@
 
 #include "DecisionMaking.hpp"
 int DIFFERENCE_THRESHOLD = 100;
-double PROBABILITY_THRESHOLD = 0.85;
+double PROBABILITY_THRESHOLD = 0.80;
 
 int main(){
-    MailDataset* mailDataset = new MailDataset();
-    DecisionMaking* decision = new DecisionMaking(mailDataset);
+
+    for(int epoch=0; epoch < 10; epoch ++){
+        MailDatasetTest* mailDataset = new MailDatasetTest();
+        DecisionMaking* decision = new DecisionMaking(mailDataset);
+        
+        delete mailDataset;
+        delete decision;
+    }
+
 
     return 0;
 }
