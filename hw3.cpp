@@ -1,20 +1,27 @@
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 #include "DecisionMaking.hpp"
 int DIFFERENCE_THRESHOLD = 100;
 double PROBABILITY_THRESHOLD = 0.80;
 
-int main(){
+#define EPOCH 10
 
-    for(int epoch=0; epoch < 10; epoch ++){
+int main() {
+    double meanAccuracy = 0;
+    for (int epoch = 0; epoch < EPOCH; epoch++) {
         MailDatasetTest* mailDataset = new MailDatasetTest();
         DecisionMaking* decision = new DecisionMaking(mailDataset);
-        
+
+        meanAccuracy += decision->getAccuracy();
+
         delete mailDataset;
         delete decision;
     }
 
-
+    meanAccuracy = meanAccuracy / EPOCH;
+    cout << "-------------------------------" << endl;
+    cout << "MeanAccuray:        " << meanAccuracy << endl;
+    cout << "-------------------------------" << endl;
     return 0;
 }

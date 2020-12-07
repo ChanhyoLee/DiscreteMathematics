@@ -1,18 +1,19 @@
-class WordProbability{
-private:
+class WordProbability {
+   private:
     double spamProb;
     double hamProb;
-public:
-    void setSPAMProb(double d){
+
+   public:
+    void setSPAMProb(double d) {
         spamProb = d;
     }
-    void setHAMProb(double d){
+    void setHAMProb(double d) {
         hamProb = d;
     }
-    double getSPAMProb(){
+    double getSPAMProb() {
         return spamProb;
     }
-    double getHAMProb(){
+    double getHAMProb() {
         return hamProb;
     }
 };
