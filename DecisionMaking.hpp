@@ -1,5 +1,5 @@
 //#include "MailDataset.hpp"
-#include "MailDatasetTest.hpp"
+#include "MailDataset.hpp"
 #include "WordProbability.hpp"
 
 //#define PROBABILITY_THRESHOLD 0.8
@@ -7,12 +7,12 @@ extern double PROBABILITY_THRESHOLD;
 
 class DecisionMaking {
    private:
-    MailDatasetTest* dataset;
+    MailDataset* dataset;
     map<string, int>* m_ptest_Vocab2Frequency;
     double accuracy;
 
    public:
-    DecisionMaking(MailDatasetTest* maildataset) {
+    DecisionMaking(MailDataset* maildataset) {
         dataset = maildataset;
         accuracy = 0;
         vector<Mail> test_mails = dataset->getTestMails();

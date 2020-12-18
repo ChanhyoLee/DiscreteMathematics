@@ -47,59 +47,53 @@ class MailDataset {
         m_pHAM_Vocab2Frequency = new map<string, int>();
         m_pSPAM_Vocab2Frequency = new map<string, int>();
         build_dataset();
+
+        cout << "ham_count: " << ham_mails.size() << "\tspam_count: " << spam_mails.size() << endl;
         chooseMails();
     }
 
     void build_dataset() {
         int count = 0;
-        fstream fs;
-        fs.open(path, ios::in);
 
-        string temp_string;
-        string temp_label;
-        Mail temp_mail;  //한 행의 임시 Mail 객체
+        ifstream t(path);
+        stringstream buffer;
+        buffer << t.rdbuf();
+        string wholeDataset = buffer.str();
+
         srand(time(0));
-        while (!fs.eof()) {
-            getline(fs, temp_string, '\"');
-            count++;
-            //cout << "||" << temp_string << "||" <<endl;
-            if (count % 2 == 1) {
-                temp_label = temp_string;
-            } else {
-                vector<string> wholeMailText = splitBy(temp_string, '\n');
-                for (int i = 0; i < wholeMailText.size(); i++) {
-                    string sentence = wholeMailText.at(i);
-                    //cout << sentence << endl;
-                    sentence = preprocess(sentence);
-                    //addSentence(sentence);
-                    if (i == 0) {
-                        temp_mail.setSubject(sentence);
-                        //cout << sentence << endl;
-                    } else {
-                        temp_mail.addBody(sentence);
-                    }
+        vector<string> mailVector = splitByString(wholeDataset, "\",");
+        count = mailVector.size();
+        cout << "Mail Count: " << count << endl;
+        for (int i = 0; i < mailVector.size(); i++) {
+            Mail temp_mail;
+            string eachMail = mailVector.at(i);
+            vector<string> mailText = splitByString(eachMail, ",\"");
+            if (mailText.at(0).find("ham") != string::npos) {
+                ham_count++;
+                temp_mail.setLabel(HAM);
+                vector<string> wholeMailText = splitBy(mailText.at(1), '\n');
+                for (int j = 0; j < wholeMailText.size(); j++) {
+                    if (j == 0)
+                        temp_mail.setSubject(preprocess(wholeMailText.at(0)));
+                    else
+                        temp_mail.addBody(preprocess(wholeMailText.at(j)));
                 }
-                if (temp_label.find("ham") != string::npos) {
-                    temp_mail.setLabel(HAM);
-                    ham_count++;
-                    ham_mails.push_back(temp_mail);
-                } else if (temp_label.find("spam") != string::npos) {
-                    temp_mail.setLabel(SPAM);
-                    spam_count++;
-                    spam_mails.push_back(temp_mail);
-                } else {
-                    temp_mail = Mail();
-                    continue;
+                ham_mails.push_back(temp_mail);
+            } else if (mailText.at(0).find("spam") != string::npos) {
+                spam_count++;
+                temp_mail.setLabel(SPAM);
+                vector<string> wholeMailText = splitBy(mailText.at(1), '\n');
+                for (int j = 0; j < wholeMailText.size(); j++) {
+                    if (j == 0)
+                        temp_mail.setSubject(preprocess(wholeMailText.at(0)));
+                    else
+                        temp_mail.addBody(preprocess(wholeMailText.at(j)));
                 }
-                whole_mails.push_back(temp_mail);
-
-                temp_mail = Mail();
-                num_lines++;
+                spam_mails.push_back(temp_mail);
             }
+            whole_mails.push_back(temp_mail);
+            t.close();
         }
-        fs.close();
-        // cout << ham_count << endl;
-        // cout << spam_count << endl;
     }
 
     void chooseMails() {
@@ -140,11 +134,8 @@ class MailDataset {
             if (i % 5 == 4) cout << endl;
         }
         cout << endl;
-        // for(int i=0; i<spamwords.size(); i++){
-        //     if(i%5==4) cout << endl;
-        // }
-        cout << endl;
     }
+
     string getPath() {
         return path;
     }
@@ -166,7 +157,7 @@ class MailDataset {
         if (mail.getLabel() == HAM) {
             for (iter = each_Vocab2Frequency->begin(); iter != each_Vocab2Frequency->end(); iter++) {
                 if (m_pHAM_Vocab2Frequency->find(iter->first) == m_pHAM_Vocab2Frequency->end()) {
-                    m_pHAM_Vocab2Frequency->insert(make_pair(iter->first, iter->second));
+                    m_pHAM_Vocab2Frequency->insert(make_pair(iter->first, 1));
                 } else {
                     m_pHAM_Vocab2Frequency->at(iter->first)++;
                 }
@@ -174,7 +165,7 @@ class MailDataset {
         } else if (mail.getLabel() == SPAM) {
             for (iter = each_Vocab2Frequency->begin(); iter != each_Vocab2Frequency->end(); iter++) {
                 if (m_pSPAM_Vocab2Frequency->find(iter->first) == m_pSPAM_Vocab2Frequency->end()) {
-                    m_pSPAM_Vocab2Frequency->insert(make_pair(iter->first, iter->second));
+                    m_pSPAM_Vocab2Frequency->insert(make_pair(iter->first, 1));
                 } else {
                     m_pSPAM_Vocab2Frequency->at(iter->first)++;
                 }
@@ -215,12 +206,32 @@ class MailDataset {
             pair<string, int> each_pair = sortedSPAM_V2F.at(i);
             if (m_pHAM_Vocab2Frequency->find(each_pair.first) != m_pHAM_Vocab2Frequency->end()) {
                 difference = (int)(each_pair.second - m_pHAM_Vocab2Frequency->at(each_pair.first));
-                if (difference > DIFFERENCE_THRESHOLD) result.push_back(each_pair);
+                if (difference > DIFFERENCE_THRESHOLD && m_pHAM_Vocab2Frequency->at(each_pair.first) < 100) result.push_back(each_pair);
             } else if (m_pHAM_Vocab2Frequency->find(each_pair.first) == m_pHAM_Vocab2Frequency->end()) {
                 difference = (int)each_pair.second;
                 if (difference > DIFFERENCE_THRESHOLD) result.push_back(each_pair);
             }
         }
         return result;
+    }
+
+    vector<string> splitByString(string str, string delimiter) {
+        vector<string> ret;
+        size_t pos = 0;
+        string token;
+        do {
+            pos = str.find(delimiter);  // delimiter를 못찾으면 텍스트 끝까지 token으로 취급
+            if (pos == string::npos) {
+                token = str;
+            } else {
+                token = str.substr(0, pos);
+            }
+            if (token[token.size() - 1] == '\r') {
+                token = token.substr(0, token.size() - 1);
+            }
+            ret.push_back(token);
+            str.erase(0, pos + delimiter.length());
+        } while (pos != string::npos);
+        return ret;
     }
 };
